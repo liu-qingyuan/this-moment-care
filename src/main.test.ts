@@ -153,6 +153,102 @@ describe("This Moment", () => {
     expect(root.textContent).toContain("不能判断疾病、预后或治疗");
   });
 
+  it("creates one expression draft for a conversation audience", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "我想和某个人说")!
+      .click();
+
+    const audience = root.querySelector<HTMLInputElement>("#expression-audience")!;
+    const input = root.querySelector<HTMLTextAreaElement>("#expression-input")!;
+    audience.value = "姐姐";
+    input.value =
+      "谢谢你一直陪着我。我有时候不知道怎么开口，但我很珍惜我们一起度过的时间。";
+    root.querySelector<HTMLButtonElement>("[data-submit-expression]")!.click();
+
+    expect(root.textContent).toContain("想对谁说");
+    expect(root.textContent).toContain("姐姐");
+    expect(root.textContent).toContain("我最想说");
+    expect(root.textContent).toContain("整理后的话");
+    expect(
+      root.querySelector<HTMLTextAreaElement>("#expression-draft")?.value,
+    ).toContain("姐姐，谢谢你一直陪着我");
+  });
+
+  it("copies the person's final edited expression draft", async () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    const writes: string[] = [];
+    renderApp(root, {
+      clipboard: {
+        writeText: async (text) => {
+          writes.push(text);
+        },
+      },
+    });
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "我想和某个人说")!
+      .click();
+
+    const audience = root.querySelector<HTMLInputElement>("#expression-audience")!;
+    const input = root.querySelector<HTMLTextAreaElement>("#expression-input")!;
+    audience.value = "姐姐";
+    input.value = "谢谢你一直陪着我。";
+    root.querySelector<HTMLButtonElement>("[data-submit-expression]")!.click();
+    expect(writes).toEqual([]);
+
+    const draft = root.querySelector<HTMLTextAreaElement>("#expression-draft")!;
+    draft.value = "姐姐，谢谢你。我爱你。";
+    draft.dispatchEvent(new Event("input", { bubbles: true }));
+    root.querySelector<HTMLButtonElement>("[data-copy-expression]")!.click();
+    await Promise.resolve();
+
+    expect(writes).toEqual(["姐姐，谢谢你。我爱你。"]);
+    expect(root.textContent).toContain("已复制");
+  });
+
+  it("interrupts an explicit crisis expression and returns to both fields", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "我想和某个人说")!
+      .click();
+
+    const audience = root.querySelector<HTMLInputElement>("#expression-audience")!;
+    const input = root.querySelector<HTMLTextAreaElement>("#expression-input")!;
+    audience.value = "姐姐";
+    input.value = "我想伤害自己";
+    root.querySelector<HTMLButtonElement>("[data-submit-expression]")!.click();
+    expect(root.querySelector("h1")?.textContent).toBe("先停一下");
+
+    root.querySelector<HTMLButtonElement>("[data-crisis-return]")!.click();
+    expect(root.querySelector<HTMLInputElement>("#expression-audience")?.value).toBe(
+      "姐姐",
+    );
+    expect(root.querySelector<HTMLTextAreaElement>("#expression-input")?.value).toBe(
+      "我想伤害自己",
+    );
+  });
+
+  it("validates the expression audience and original information in order", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "我想和某个人说")!
+      .click();
+
+    root.querySelector<HTMLButtonElement>("[data-submit-expression]")!.click();
+    const audience = root.querySelector<HTMLInputElement>("#expression-audience")!;
+    expect(root.textContent).toContain("请先写下想对谁说");
+    expect(document.activeElement).toBe(audience);
+
+    audience.value = "姐姐";
+    root.querySelector<HTMLButtonElement>("[data-submit-expression]")!.click();
+    const input = root.querySelector<HTMLTextAreaElement>("#expression-input")!;
+    expect(root.textContent).toContain("请先写下最想说的话");
+    expect(document.activeElement).toBe(input);
+  });
+
   it("shares the crisis interruption with the understanding activity", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);

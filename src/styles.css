@@ -49,12 +49,14 @@ body {
 }
 
 button,
+input,
 textarea {
   font: inherit;
 }
 
 button,
 a,
+input,
 textarea {
   outline-offset: 3px;
 }
@@ -219,6 +221,27 @@ textarea {
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
+.text-input {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid #c9cbc4;
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1.0625rem;
+}
+
+.text-input:hover {
+  border-color: #aeb2aa;
+}
+
+.text-input:focus-visible {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 2px #dbe8e1;
+}
+
 textarea:hover {
   border-color: #aeb2aa;
 }
@@ -342,6 +365,26 @@ textarea:focus-visible {
 .boundary-notice p + p {
   margin-top: 14px;
   color: var(--muted);
+}
+
+.expression-form > label,
+.draft-editor > label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 1.0625rem;
+  font-weight: 650;
+}
+
+.expression-form > label:not(:first-child) {
+  margin-top: 28px;
+}
+
+.source-subheading {
+  margin-top: 24px;
+}
+
+.draft-editor {
+  padding-top: 26px;
 }
 
 .preview-actions {

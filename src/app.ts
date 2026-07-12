@@ -1,4 +1,5 @@
 import {
+  createExpressionDraft,
   explainMedicalText,
   formatMedicalExplanation,
   formatOrganizedReflection,
@@ -49,6 +50,10 @@ export function renderApp(
       inputError: false,
       boundaryNotice: false,
     },
+    expression: {
+      audience: "",
+      input: "",
+    },
     crisisInterrupted: false,
   };
 
@@ -69,6 +74,12 @@ export function renderApp(
         };
       },
     },
+    express: {
+      inputSelector: "#expression-input",
+      clear() {
+        state.expression = { audience: "", input: "" };
+      },
+    },
   };
 
   const render = (focusSelector?: string) => {
@@ -79,7 +90,8 @@ export function renderApp(
   };
 
   const readInput = (selector: string): string =>
-    root.querySelector<HTMLTextAreaElement>(selector)?.value ?? "";
+    root.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector)?.value ??
+    "";
 
   const requireInput = (
     activityState: ActivityState<unknown>,
@@ -95,26 +107,22 @@ export function renderApp(
     return false;
   };
 
-  const enterCrisis = (
-    activityState: ActivityState<unknown>,
-    clearAdditionalState?: () => void,
-  ) => {
-    activityState.result = undefined;
-    clearAdditionalState?.();
+  const enterCrisis = (clearActivityResult: () => void) => {
+    clearActivityResult();
     state.crisisInterrupted = true;
     render(".crisis-layout");
   };
 
-  const copyResult = async (
+  const copyText = async (
     text: string,
-    activityState: ActivityState<unknown>,
+    setFeedback: (feedback: "success" | "error") => void,
     focusSelector: string,
   ) => {
     try {
       await clipboard.writeText(text);
-      activityState.copyFeedback = "success";
+      setFeedback("success");
     } catch {
-      activityState.copyFeedback = "error";
+      setFeedback("error");
     }
     render(focusSelector);
   };
@@ -123,7 +131,9 @@ export function renderApp(
     "submit-current": () => {
       if (!requireInput(state.current, "#current-input")) return;
       if (hasExplicitCrisisSignal(state.current.input)) {
-        enterCrisis(state.current);
+        enterCrisis(() => {
+          state.current.result = undefined;
+        });
         return;
       }
       state.current.result = organizeReflection(state.current.input);
@@ -132,9 +142,11 @@ export function renderApp(
     },
     "copy-current": () => {
       if (!state.current.result) return;
-      return copyResult(
+      return copyText(
         formatOrganizedReflection(state.current.input, state.current.result),
-        state.current,
+        (feedback) => {
+          state.current.copyFeedback = feedback;
+        },
         "[data-copy-current]",
       );
     },
@@ -146,7 +158,8 @@ export function renderApp(
     "submit-understand": () => {
       if (!requireInput(state.understanding, "#understand-input")) return;
       if (hasExplicitCrisisSignal(state.understanding.input)) {
-        enterCrisis(state.understanding, () => {
+        enterCrisis(() => {
+          state.understanding.result = undefined;
           state.understanding.boundaryNotice = false;
         });
         return;
@@ -164,12 +177,14 @@ export function renderApp(
     },
     "copy-understand": () => {
       if (!state.understanding.result) return;
-      return copyResult(
+      return copyText(
         formatMedicalExplanation(
           state.understanding.input,
           state.understanding.result,
         ),
-        state.understanding,
+        (feedback) => {
+          state.understanding.copyFeedback = feedback;
+        },
         "[data-copy-understand]",
       );
     },
@@ -178,6 +193,48 @@ export function renderApp(
       state.understanding.copyFeedback = undefined;
       state.understanding.boundaryNotice = false;
       render("#understand-input");
+    },
+    "submit-expression": () => {
+      state.expression.audience = readInput("#expression-audience");
+      state.expression.input = readInput("#expression-input");
+      if (!state.expression.audience.trim()) {
+        state.expression.fieldError = "audience";
+        render("#expression-audience");
+        return;
+      }
+      if (!state.expression.input.trim()) {
+        state.expression.fieldError = "input";
+        render("#expression-input");
+        return;
+      }
+      state.expression.fieldError = undefined;
+      if (hasExplicitCrisisSignal(state.expression.input)) {
+        enterCrisis(() => {
+          state.expression.draft = undefined;
+        });
+        return;
+      }
+      state.expression.draft = createExpressionDraft(
+        state.expression.audience,
+        state.expression.input,
+      );
+      state.expression.copyFeedback = undefined;
+      render(".result-layout");
+    },
+    "copy-expression": () => {
+      if (state.expression.draft === undefined) return;
+      return copyText(
+        state.expression.draft,
+        (feedback) => {
+          state.expression.copyFeedback = feedback;
+        },
+        "[data-copy-expression]",
+      );
+    },
+    "revise-expression": () => {
+      state.expression.draft = undefined;
+      state.expression.copyFeedback = undefined;
+      render("#expression-input");
     },
     "crisis-return": () => {
       state.crisisInterrupted = false;
@@ -197,11 +254,25 @@ export function renderApp(
     "understand-input": (value) => {
       state.understanding.input = value;
     },
+    "expression-audience": (value) => {
+      state.expression.audience = value;
+    },
+    "expression-input": (value) => {
+      state.expression.input = value;
+    },
+    "expression-draft": (value) => {
+      state.expression.draft = value;
+    },
   };
 
   root.addEventListener("input", (event) => {
     const input = event.target;
-    if (!(input instanceof HTMLTextAreaElement)) return;
+    if (
+      !(input instanceof HTMLTextAreaElement) &&
+      !(input instanceof HTMLInputElement)
+    ) {
+      return;
+    }
     inputBindings[input.id]?.(input.value);
   });
 

@@ -123,3 +123,11 @@ export function formatMedicalExplanation(
     `可以向医护确认\n${explanation.confirmationQuestion}`,
   ].join("\n\n");
 }
+
+export function createExpressionDraft(audience: string, text: string): string {
+  const organized = text
+    .replaceAll("我有时候不知道怎么开口", "有些话我不太知道怎么开口")
+    .replaceAll("但我很珍惜", "但我一直很珍惜");
+  const prefix = `${audience.trim()}，`;
+  return organized.startsWith(prefix) ? organized : `${prefix}${organized}`;
+}

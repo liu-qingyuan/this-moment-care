@@ -16,6 +16,9 @@ export type CommandId =
   | "submit-understand"
   | "copy-understand"
   | "revise-understand"
+  | "submit-expression"
+  | "copy-expression"
+  | "revise-expression"
   | "crisis-return"
   | "crisis-clear";
 
@@ -31,9 +34,18 @@ export interface UnderstandingActivityState
   boundaryNotice: boolean;
 }
 
+export interface ExpressionActivityState {
+  audience: string;
+  input: string;
+  draft?: string;
+  fieldError?: "audience" | "input";
+  copyFeedback?: "success" | "error";
+}
+
 export interface ApplicationState {
   activeActivity: ActivityId;
   current: ActivityState<OrganizedReflection>;
   understanding: UnderstandingActivityState;
+  expression: ExpressionActivityState;
   crisisInterrupted: boolean;
 }
