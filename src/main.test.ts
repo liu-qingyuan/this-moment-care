@@ -297,6 +297,8 @@ describe("This Moment", () => {
 
     input = root.querySelector<HTMLTextAreaElement>("#important-input")!;
     expect(input.value).toContain("和女儿一起做饭");
+    expect(root.textContent).toContain("确认修改");
+    expect(root.textContent).not.toContain("保存修改");
     input.value = "和女儿一起包饺子，因为那让我觉得很像家。";
     root.querySelector<HTMLButtonElement>("[data-submit-important]")!.click();
 

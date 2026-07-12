@@ -47,7 +47,7 @@ export function renderImportantActivity(state: ImportantActivityState): string {
           <textarea ${inputIdAttribute("important-input")} rows="8">${escapeHtml(state.input)}</textarea>
           ${state.inputError ? '<p class="field-error" role="alert">请先写下想整理的事情。</p>' : ""}
           <p class="privacy-note">可以用“因为”明确分开事情和原因。</p>
-          <button class="primary-action" type="button" data-submit-important ${commandAttribute("submit-important")}>${state.editingIndex === undefined ? "添加一件重要的事" : "保存修改"}</button>
+          <button class="primary-action" type="button" data-submit-important ${commandAttribute("submit-important")}>${state.editingIndex === undefined ? "添加一件重要的事" : "确认修改"}</button>
         </section>
       </div>
     </main>
