@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+coverage/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Agent and local workflow state
+.ralph/
+AGENTS.md
+.claude/
+CLAUDE.md
+
+# System files and logs
+.DS_Store
+*.log
+npm-debug.log*
