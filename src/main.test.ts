@@ -234,20 +234,50 @@ describe("This Moment", () => {
     const localStorageWrite = vi.fn();
     const sessionStorageWrite = vi.fn();
     const indexedDbOpen = vi.fn();
+    const cacheOpen = vi.fn();
+    const networkFetch = vi.fn();
+    const cookieWrite = vi.fn();
+    const xhrSend = vi.spyOn(XMLHttpRequest.prototype, "send");
+    const pushState = vi.spyOn(history, "pushState");
+    const replaceState = vi.spyOn(history, "replaceState");
+    const initialUrl = location.href;
+    const cookieDescriptor = Object.getOwnPropertyDescriptor(document, "cookie");
     vi.stubGlobal("localStorage", { setItem: localStorageWrite });
     vi.stubGlobal("sessionStorage", { setItem: sessionStorageWrite });
     vi.stubGlobal("indexedDB", { open: indexedDbOpen });
-    const root = document.querySelector<HTMLElement>("#app")!;
-    renderApp(root);
+    vi.stubGlobal("caches", { open: cacheOpen });
+    vi.stubGlobal("fetch", networkFetch);
+    Object.defineProperty(document, "cookie", {
+      configurable: true,
+      get: () => "",
+      set: cookieWrite,
+    });
 
-    const input = root.querySelector<HTMLTextAreaElement>("#current-input")!;
-    input.value = "这是一段敏感内容。我希望今天安静一点。";
-    root.querySelector<HTMLButtonElement>("[data-submit-current]")!.click();
+    try {
+      const root = document.querySelector<HTMLElement>("#app")!;
+      renderApp(root);
 
-    expect(localStorageWrite).not.toHaveBeenCalled();
-    expect(sessionStorageWrite).not.toHaveBeenCalled();
-    expect(indexedDbOpen).not.toHaveBeenCalled();
-    expect(document.cookie).toBe("");
+      const input = root.querySelector<HTMLTextAreaElement>("#current-input")!;
+      input.value = "这是一段敏感内容。我希望今天安静一点。";
+      root.querySelector<HTMLButtonElement>("[data-submit-current]")!.click();
+
+      expect(localStorageWrite).not.toHaveBeenCalled();
+      expect(sessionStorageWrite).not.toHaveBeenCalled();
+      expect(indexedDbOpen).not.toHaveBeenCalled();
+      expect(cacheOpen).not.toHaveBeenCalled();
+      expect(cookieWrite).not.toHaveBeenCalled();
+      expect(networkFetch).not.toHaveBeenCalled();
+      expect(xhrSend).not.toHaveBeenCalled();
+      expect(pushState).not.toHaveBeenCalled();
+      expect(replaceState).not.toHaveBeenCalled();
+      expect(location.href).toBe(initialUrl);
+    } finally {
+      if (cookieDescriptor) {
+        Object.defineProperty(document, "cookie", cookieDescriptor);
+      } else {
+        Reflect.deleteProperty(document, "cookie");
+      }
+    }
   });
 
   it("reports clipboard failure without leaving the preview", async () => {
@@ -281,5 +311,17 @@ describe("This Moment", () => {
 
     expect(root.querySelector(".source-block img")).toBeNull();
     expect(root.querySelector(".source-block")?.textContent).toContain(original);
+  });
+
+  it("preserves original whitespace in the result preview", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+
+    const original = "  我觉得累。\n我希望今天安静一点。  ";
+    const input = root.querySelector<HTMLTextAreaElement>("#current-input")!;
+    input.value = original;
+    root.querySelector<HTMLButtonElement>("[data-submit-current]")!.click();
+
+    expect(root.querySelector(".source-block p")?.textContent).toBe(original);
   });
 });

@@ -221,8 +221,8 @@ export function renderApp(
     root
       .querySelector<HTMLButtonElement>("[data-submit-current]")
       ?.addEventListener("click", () => {
-        state.currentInput = input?.value.trim() ?? "";
-        if (!state.currentInput) {
+        state.currentInput = input?.value ?? "";
+        if (!state.currentInput.trim()) {
           state.inputError = true;
           render();
           root.querySelector<HTMLTextAreaElement>("#current-input")?.focus();
