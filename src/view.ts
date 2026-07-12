@@ -15,7 +15,7 @@ function escapeHtml(value: string): string {
 }
 
 function renderCurrentActivity(state: ApplicationState): string {
-  if (state.currentResult) {
+  if (state.current.result) {
     return `
       <main id="main-content" class="activity-layout result-layout" tabindex="-1">
         <section class="activity-intro" aria-labelledby="activity-title">
@@ -27,27 +27,27 @@ function renderCurrentActivity(state: ApplicationState): string {
         <section class="activity-work reflection-preview" aria-label="整理结果">
           <div class="source-block">
             <h2>原始信息</h2>
-            <p>${escapeHtml(state.currentInput)}</p>
+            <p>${escapeHtml(state.current.input)}</p>
           </div>
           <div class="reflection-section">
             <h2>我正在感受</h2>
-            <p>${escapeHtml(state.currentResult.feelings)}</p>
+            <p>${escapeHtml(state.current.result.feelings)}</p>
           </div>
           <div class="reflection-section">
             <h2>我在担心</h2>
-            <p>${escapeHtml(state.currentResult.worries)}</p>
+            <p>${escapeHtml(state.current.result.worries)}</p>
           </div>
           <div class="reflection-section">
             <h2>我现在希望</h2>
-            <p>${escapeHtml(state.currentResult.hopes)}</p>
+            <p>${escapeHtml(state.current.result.hopes)}</p>
           </div>
           <div class="preview-actions">
-            <button class="primary-action" type="button" data-copy-current>确认并复制</button>
-            <button class="secondary-action" type="button" data-revise-current>返回修改</button>
+            <button class="primary-action" type="button" data-copy-current data-command="copy-current">确认并复制</button>
+            <button class="secondary-action" type="button" data-revise-current data-command="revise-current">返回修改</button>
             <p class="action-feedback" role="status" aria-live="polite">${
-              state.copyFeedback === "success"
+              state.current.copyFeedback === "success"
                 ? "已复制"
-                : state.copyFeedback === "error"
+                : state.current.copyFeedback === "error"
                   ? "复制失败，请手动选择文字。"
                   : ""
             }</p>
@@ -67,14 +67,14 @@ function renderCurrentActivity(state: ApplicationState): string {
 
       <section class="activity-work" aria-label="此刻的我输入">
         <label for="current-input">此刻，你最想整理什么？</label>
-        <textarea id="current-input" rows="8">${escapeHtml(state.currentInput)}</textarea>
+        <textarea id="current-input" rows="8">${escapeHtml(state.current.input)}</textarea>
         ${
-          state.inputError
+          state.current.inputError
             ? '<p class="field-error" role="alert">请先写下你此刻想整理的内容。</p>'
             : ""
         }
         <p class="privacy-note">内容只留在当前页面，刷新或关闭后不会保留。</p>
-        <button class="primary-action" type="button" data-submit-current>确认并整理</button>
+        <button class="primary-action" type="button" data-submit-current data-command="submit-current">确认并整理</button>
       </section>
     </main>
   `;
@@ -96,15 +96,15 @@ function renderCrisisInterruption(): string {
         </div>
 
         <p class="crisis-limit">此刻不能判断风险，也不能替代紧急帮助。</p>
-        <button class="primary-action" type="button" data-crisis-return>我已看到，返回</button>
-        <button class="text-action" type="button" data-crisis-clear>清除刚才的内容</button>
+        <button class="primary-action" type="button" data-crisis-return data-command="crisis-return">我已看到，返回</button>
+        <button class="text-action" type="button" data-crisis-clear data-command="crisis-clear">清除刚才的内容</button>
       </section>
     </main>
   `;
 }
 
 function renderUnderstandingActivity(state: ApplicationState): string {
-  if (state.understandingBoundaryNotice) {
+  if (state.understanding.boundaryNotice) {
     return `
       <main id="main-content" class="activity-layout boundary-layout" tabindex="-1">
         <section class="activity-intro" aria-labelledby="activity-title">
@@ -117,13 +117,13 @@ function renderUnderstandingActivity(state: ApplicationState): string {
           <h2 id="boundary-title">这里不能替你判断</h2>
           <p>此刻不能判断疾病、预后或治疗，也不能替你选择治疗方案。</p>
           <p>请输入医生原话或医疗说明文字，我们可以帮助你区分解释、不确定内容和待确认问题。</p>
-          <button class="secondary-action" type="button" data-revise-understand>返回修改</button>
+          <button class="secondary-action" type="button" data-revise-understand data-command="revise-understand">返回修改</button>
         </section>
       </main>
     `;
   }
 
-  if (state.understandingResult) {
+  if (state.understanding.result) {
     return `
       <main id="main-content" class="activity-layout result-layout" tabindex="-1">
         <section class="activity-intro" aria-labelledby="activity-title">
@@ -135,27 +135,27 @@ function renderUnderstandingActivity(state: ApplicationState): string {
         <section class="activity-work reflection-preview" aria-label="解释结果">
           <div class="source-block">
             <h2>原始信息</h2>
-            <p>${escapeHtml(state.understandingInput)}</p>
+            <p>${escapeHtml(state.understanding.input)}</p>
           </div>
           <div class="reflection-section">
             <h2>通俗解释</h2>
-            <p>${escapeHtml(state.understandingResult.plainLanguage)}</p>
+            <p>${escapeHtml(state.understanding.result.plainLanguage)}</p>
           </div>
           <div class="reflection-section uncertainty-section">
             <h2>还不能确定</h2>
-            <p>${escapeHtml(state.understandingResult.uncertainty)}</p>
+            <p>${escapeHtml(state.understanding.result.uncertainty)}</p>
           </div>
           <div class="reflection-section confirmation-section">
             <h2>可以向医护确认</h2>
-            <p>${escapeHtml(state.understandingResult.confirmationQuestion)}</p>
+            <p>${escapeHtml(state.understanding.result.confirmationQuestion)}</p>
           </div>
           <div class="preview-actions">
-            <button class="primary-action" type="button" data-copy-understand>确认并复制</button>
-            <button class="secondary-action" type="button" data-revise-understand>返回修改</button>
+            <button class="primary-action" type="button" data-copy-understand data-command="copy-understand">确认并复制</button>
+            <button class="secondary-action" type="button" data-revise-understand data-command="revise-understand">返回修改</button>
             <p class="action-feedback" role="status" aria-live="polite">${
-              state.understandingCopyFeedback === "success"
+              state.understanding.copyFeedback === "success"
                 ? "已复制"
-                : state.understandingCopyFeedback === "error"
+                : state.understanding.copyFeedback === "error"
                   ? "复制失败，请手动选择文字。"
                   : ""
             }</p>
@@ -175,14 +175,14 @@ function renderUnderstandingActivity(state: ApplicationState): string {
 
       <section class="activity-work" aria-label="医疗说明文字输入">
         <label for="understand-input">医生原话或医疗说明</label>
-        <textarea id="understand-input" rows="8">${escapeHtml(state.understandingInput)}</textarea>
+        <textarea id="understand-input" rows="8">${escapeHtml(state.understanding.input)}</textarea>
         ${
-          state.understandingInputError
+          state.understanding.inputError
             ? '<p class="field-error" role="alert">请先输入需要理解的文字。</p>'
             : ""
         }
         <p class="privacy-note">不上传文件，不判断疾病；内容只留在当前页面。</p>
-        <button class="primary-action" type="button" data-submit-understand>确认并解释</button>
+        <button class="primary-action" type="button" data-submit-understand data-command="submit-understand">确认并解释</button>
       </section>
     </main>
   `;

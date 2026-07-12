@@ -20,12 +20,12 @@ const explicitCrisisPatterns = [
 ];
 
 const unsupportedMedicalRequestPatterns = [
-  /我得了什么病/u,
-  /帮我诊断/u,
-  /是不是(?:癌症|肿瘤|绝症)/u,
-  /还能活多久/u,
-  /应该(?:吃|用)什么药/u,
-  /(?:应该|该)怎么治疗/u,
+  /^(?:请|能否|可以)?(?:帮我)?(?:判断|诊断)/u,
+  /^(?:我)?(?:到底|可能)?得了什么病/u,
+  /^(?:我)?是不是(?:癌症|肿瘤|绝症)/u,
+  /^(?:我)?还能活多久/u,
+  /^(?:我)?(?:应该|该|要不要|是否)(?:接受|做|进行|吃|用).*(?:治疗|化疗|手术|药)/u,
+  /^(?:我)?(?:应该|该)怎么治疗/u,
 ];
 
 const feelingWords = ["感到", "觉得", "害怕", "难过", "平静", "孤单", "累"];
@@ -60,7 +60,8 @@ export function hasExplicitCrisisSignal(text: string): boolean {
 }
 
 export function isUnsupportedMedicalRequest(text: string): boolean {
-  return unsupportedMedicalRequestPatterns.some((pattern) => pattern.test(text));
+  const request = text.trim();
+  return unsupportedMedicalRequestPatterns.some((pattern) => pattern.test(request));
 }
 
 export function formatOrganizedReflection(
@@ -76,14 +77,22 @@ export function formatOrganizedReflection(
 }
 
 export function explainMedicalText(text: string): MedicalExplanation {
-  const comfortFocused = text.includes("以舒适为主");
   const observesSymptoms = text.includes("观察症状变化");
+  const replacements = [
+    ["以舒适为主", "更重视让你舒服一些"],
+    ["观察症状变化", "留意身体有没有新的不适"],
+    ["白细胞偏低", "白细胞数量低于常见参考范围"],
+  ] as const;
+  const simplified = replacements.reduce(
+    (result, [medicalText, plainText]) => result.replaceAll(medicalText, plainText),
+    text,
+  );
+  const hasSafeReplacement = simplified !== text;
 
   return {
-    plainLanguage:
-      comfortFocused && observesSymptoms
-        ? "接下来会更重视让你舒服一些，并留意身体有没有新的不适。"
-        : "这段说明是在描述接下来的照护安排，具体含义仍需要医护人员结合你的情况确认。",
+    plainLanguage: hasSafeReplacement
+      ? simplified
+      : "本地原型没有可安全简化的固定表达，请向医护确认原意。",
     uncertainty: observesSymptoms
       ? "原话没有说明会出现哪些变化，也没有给出具体时间。"
       : "仅凭这段原话，不能确定具体原因、严重程度或接下来会发生什么。",

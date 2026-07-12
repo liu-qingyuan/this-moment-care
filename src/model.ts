@@ -9,16 +9,21 @@ export const activities = [
 
 export type ActivityId = (typeof activities)[number]["id"];
 
+export interface ActivityState<Result> {
+  input: string;
+  result?: Result;
+  inputError: boolean;
+  copyFeedback?: "success" | "error";
+}
+
+export interface UnderstandingActivityState
+  extends ActivityState<MedicalExplanation> {
+  boundaryNotice: boolean;
+}
+
 export interface ApplicationState {
   activeActivity: ActivityId;
-  currentInput: string;
-  currentResult?: OrganizedReflection;
+  current: ActivityState<OrganizedReflection>;
+  understanding: UnderstandingActivityState;
   crisisInterrupted: boolean;
-  copyFeedback?: "success" | "error";
-  inputError: boolean;
-  understandingInput: string;
-  understandingResult?: MedicalExplanation;
-  understandingInputError: boolean;
-  understandingCopyFeedback?: "success" | "error";
-  understandingBoundaryNotice: boolean;
 }

@@ -73,6 +73,21 @@ describe("This Moment", () => {
     expect(root.textContent).toContain("更重视让你舒服一些");
   });
 
+  it("does not recast unrelated medical text as a care arrangement", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "帮我理解")!
+      .click();
+
+    const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
+    input.value = "检查结果显示白细胞偏低。";
+    root.querySelector<HTMLButtonElement>("[data-submit-understand]")!.click();
+
+    expect(root.textContent).toContain("白细胞数量低于常见参考范围");
+    expect(root.textContent).not.toContain("接下来的照护安排");
+  });
+
   it("refuses open diagnostic requests instead of explaining them", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
@@ -87,6 +102,36 @@ describe("This Moment", () => {
     expect(root.textContent).toContain("不能判断疾病、预后或治疗");
     expect(root.textContent).toContain("请输入医生原话或医疗说明文字");
     expect(root.textContent).not.toContain("通俗解释");
+  });
+
+  it("refuses requests for a treatment decision", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "帮我理解")!
+      .click();
+
+    const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
+    input.value = "我应该接受化疗吗？";
+    root.querySelector<HTMLButtonElement>("[data-submit-understand]")!.click();
+
+    expect(root.textContent).toContain("不能判断疾病、预后或治疗");
+    expect(root.textContent).not.toContain("通俗解释");
+  });
+
+  it("accepts prognosis wording when it is clearly presented as a doctor quote", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "帮我理解")!
+      .click();
+
+    const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
+    input.value = "医生说现在还不能确定还能活多久。";
+    root.querySelector<HTMLButtonElement>("[data-submit-understand]")!.click();
+
+    expect(root.textContent).toContain("通俗解释");
+    expect(root.textContent).not.toContain("这里不能替你判断");
   });
 
   it("shares the crisis interruption with the understanding activity", () => {
