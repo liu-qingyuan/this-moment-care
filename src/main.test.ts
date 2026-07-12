@@ -338,6 +338,48 @@ describe("This Moment", () => {
     expect(root.textContent).toContain("原话中没有明确写出为什么重要");
   });
 
+  it.each([
+    "和女儿一起做饭因为那让我觉得像家。",
+    "和女儿一起做饭。因为那让我觉得像家。",
+  ])("recognizes an explicitly written reason: %s", (original) => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    openActivity(root, "对我重要的事情");
+
+    const input = root.querySelector<HTMLTextAreaElement>("#important-input")!;
+    input.value = original;
+    root.querySelector<HTMLButtonElement>("[data-submit-important]")!.click();
+
+    expect(root.textContent).toContain("那让我觉得像家");
+    expect(root.textContent).not.toContain("原话中没有明确写出为什么重要");
+  });
+
+  it("shows an empty important-matters state", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    openActivity(root, "对我重要的事情");
+
+    expect(root.textContent).toContain("还没有整理任何事情");
+    expect(root.querySelector("[data-preview-important]")).toBeNull();
+  });
+
+  it("clears important matters in a fresh application session", () => {
+    const firstRoot = document.querySelector<HTMLElement>("#app")!;
+    renderApp(firstRoot);
+    openActivity(firstRoot, "对我重要的事情");
+    const input = firstRoot.querySelector<HTMLTextAreaElement>("#important-input")!;
+    input.value = "老朋友的来信，因为它让我知道自己一直被记得。";
+    firstRoot.querySelector<HTMLButtonElement>("[data-submit-important]")!.click();
+
+    document.body.innerHTML = '<main id="app"></main>';
+    const freshRoot = document.querySelector<HTMLElement>("#app")!;
+    renderApp(freshRoot);
+    openActivity(freshRoot, "对我重要的事情");
+
+    expect(freshRoot.textContent).toContain("还没有整理任何事情");
+    expect(freshRoot.textContent).not.toContain("老朋友的来信");
+  });
+
   it("keeps important matters in memory while switching activities", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);

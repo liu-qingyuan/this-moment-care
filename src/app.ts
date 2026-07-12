@@ -145,6 +145,15 @@ export function renderApp(
     render(focusSelector);
   };
 
+  const importantIndexFrom = (
+    button: HTMLButtonElement,
+  ): number | undefined => {
+    const value = button.dataset.importantIndex;
+    if (!value || !/^\d+$/u.test(value)) return undefined;
+    const index = Number(value);
+    return Number.isSafeInteger(index) ? index : undefined;
+  };
+
   const commandHandlers: Record<
     CommandId,
     (button: HTMLButtonElement) => void | Promise<void>
@@ -283,7 +292,8 @@ export function renderApp(
       render("#important-input");
     },
     "edit-important": (button) => {
-      const index = Number(button.dataset.importantIndex);
+      const index = importantIndexFrom(button);
+      if (index === undefined) return;
       const matter = state.important.matters[index];
       if (!matter) return;
       state.important.editingIndex = index;

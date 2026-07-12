@@ -139,7 +139,7 @@ export function createExpressionDraft(audience: string, text: string): string {
 }
 
 export function createImportantMatter(text: string): ImportantMatter {
-  const explicitReason = text.match(/^(.+?)[，,]\s*因为(.+)$/su);
+  const explicitReason = text.match(/^(.+?)(?:[，,。；;]\s*)?因为(.+)$/su);
   return {
     original: text,
     what: explicitReason?.[1].trim() ?? text.trim(),
