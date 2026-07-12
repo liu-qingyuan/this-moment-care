@@ -1,7 +1,9 @@
 import {
   createExpressionDraft,
+  createImportantMatter,
   explainMedicalText,
   formatMedicalExplanation,
+  formatImportantMatters,
   formatOrganizedReflection,
   hasExplicitCrisisSignal,
   isUnsupportedMedicalRequest,
@@ -55,6 +57,12 @@ export function renderApp(
       audience: "",
       input: "",
     },
+    important: {
+      input: "",
+      matters: [],
+      previewAll: false,
+      inputError: false,
+    },
     crisisInterrupted: false,
   };
 
@@ -79,6 +87,15 @@ export function renderApp(
       inputSelector: "#expression-input",
       clear() {
         state.expression = { audience: "", input: "" };
+      },
+    },
+    important: {
+      inputSelector: "#important-input",
+      clear() {
+        state.important.input = "";
+        state.important.editingIndex = undefined;
+        state.important.previewAll = false;
+        state.important.inputError = false;
       },
     },
   };
@@ -128,7 +145,10 @@ export function renderApp(
     render(focusSelector);
   };
 
-  const commandHandlers: Record<CommandId, () => void | Promise<void>> = {
+  const commandHandlers: Record<
+    CommandId,
+    (button: HTMLButtonElement) => void | Promise<void>
+  > = {
     "submit-current": () => {
       if (!requireInput(state.current, "#current-input")) return;
       if (hasExplicitCrisisSignal(state.current.input)) {
@@ -237,6 +257,60 @@ export function renderApp(
       state.expression.copyFeedback = undefined;
       render("#expression-input");
     },
+    "submit-important": () => {
+      state.important.input = readInput("#important-input");
+      if (!state.important.input.trim()) {
+        state.important.inputError = true;
+        render("#important-input");
+        return;
+      }
+      state.important.inputError = false;
+      if (hasExplicitCrisisSignal(state.important.input)) {
+        enterCrisis(() => {
+          state.important.previewAll = false;
+        });
+        return;
+      }
+      const matter = createImportantMatter(state.important.input);
+      if (state.important.editingIndex === undefined) {
+        state.important.matters.push(matter);
+      } else {
+        state.important.matters[state.important.editingIndex] = matter;
+      }
+      state.important.input = "";
+      state.important.editingIndex = undefined;
+      state.important.copyFeedback = undefined;
+      render("#important-input");
+    },
+    "edit-important": (button) => {
+      const index = Number(button.dataset.importantIndex);
+      const matter = state.important.matters[index];
+      if (!matter) return;
+      state.important.editingIndex = index;
+      state.important.input = matter.original;
+      render("#important-input");
+    },
+    "preview-important": () => {
+      if (state.important.matters.length === 0) return;
+      state.important.previewAll = true;
+      state.important.copyFeedback = undefined;
+      render(".result-layout");
+    },
+    "copy-important": () => {
+      if (state.important.matters.length === 0) return;
+      return copyText(
+        formatImportantMatters(state.important.matters),
+        (feedback) => {
+          state.important.copyFeedback = feedback;
+        },
+        "[data-copy-important]",
+      );
+    },
+    "back-important": () => {
+      state.important.previewAll = false;
+      state.important.copyFeedback = undefined;
+      render("#important-input");
+    },
     "crisis-return": () => {
       state.crisisInterrupted = false;
       render(activityControls[state.activeActivity]?.inputSelector);
@@ -264,6 +338,9 @@ export function renderApp(
     "expression-draft": (value) => {
       state.expression.draft = value;
     },
+    "important-input": (value) => {
+      state.important.input = value;
+    },
   };
 
   root.addEventListener("input", (event) => {
@@ -290,7 +367,7 @@ export function renderApp(
     }
 
     const command = button.dataset.command as CommandId | undefined;
-    if (command) void commandHandlers[command]?.();
+    if (command) void commandHandlers[command]?.(button);
   });
 
   render();

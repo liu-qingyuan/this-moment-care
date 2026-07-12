@@ -10,6 +10,12 @@ export interface MedicalExplanation {
   confirmationQuestion: string;
 }
 
+export interface ImportantMatter {
+  original: string;
+  what: string;
+  why: string;
+}
+
 const explicitCrisisPatterns = [
   /我(?:现在)?(?:要|准备|打算|想)伤害自己/u,
   /我(?:现在)?(?:要|准备|打算|想)自杀/u,
@@ -130,4 +136,23 @@ export function createExpressionDraft(audience: string, text: string): string {
     .replaceAll("但我很珍惜", "但我一直很珍惜");
   const prefix = `${audience.trim()}，`;
   return organized.startsWith(prefix) ? organized : `${prefix}${organized}`;
+}
+
+export function createImportantMatter(text: string): ImportantMatter {
+  const explicitReason = text.match(/^(.+?)[，,]\s*因为(.+)$/su);
+  return {
+    original: text,
+    what: explicitReason?.[1].trim() ?? text.trim(),
+    why:
+      explicitReason?.[2].trim() ?? "原话中没有明确写出为什么重要。",
+  };
+}
+
+export function formatImportantMatters(matters: ImportantMatter[]): string {
+  return matters
+    .map(
+      (matter, index) =>
+        `${index + 1}. ${matter.what}\n为什么重要\n${matter.why}`,
+    )
+    .join("\n\n");
 }

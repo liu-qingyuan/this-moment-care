@@ -1,4 +1,8 @@
-import type { MedicalExplanation, OrganizedReflection } from "./domain.ts";
+import type {
+  ImportantMatter,
+  MedicalExplanation,
+  OrganizedReflection,
+} from "./domain.ts";
 
 export const activities = [
   { id: "current", label: "此刻的我" },
@@ -14,7 +18,8 @@ export type InputId =
   | "understand-input"
   | "expression-audience"
   | "expression-input"
-  | "expression-draft";
+  | "expression-draft"
+  | "important-input";
 
 export type CommandId =
   | "submit-current"
@@ -26,6 +31,11 @@ export type CommandId =
   | "submit-expression"
   | "copy-expression"
   | "revise-expression"
+  | "submit-important"
+  | "edit-important"
+  | "preview-important"
+  | "copy-important"
+  | "back-important"
   | "crisis-return"
   | "crisis-clear";
 
@@ -49,10 +59,20 @@ export interface ExpressionActivityState {
   copyFeedback?: "success" | "error";
 }
 
+export interface ImportantActivityState {
+  input: string;
+  matters: ImportantMatter[];
+  editingIndex?: number;
+  previewAll: boolean;
+  inputError: boolean;
+  copyFeedback?: "success" | "error";
+}
+
 export interface ApplicationState {
   activeActivity: ActivityId;
   current: ActivityState<OrganizedReflection>;
   understanding: UnderstandingActivityState;
   expression: ExpressionActivityState;
+  important: ImportantActivityState;
   crisisInterrupted: boolean;
 }
