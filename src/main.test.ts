@@ -3,6 +3,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderApp } from "./app.ts";
 
+function openActivity(root: HTMLElement, label: string): void {
+  const button = Array.from(
+    root.querySelectorAll<HTMLButtonElement>("[data-activity]"),
+  ).find((candidate) => candidate.textContent?.trim() === label);
+  expect(button).toBeDefined();
+  button!.click();
+}
+
 describe("This Moment", () => {
   beforeEach(() => {
     document.body.innerHTML = '<main id="app"></main>';
@@ -56,10 +64,7 @@ describe("This Moment", () => {
   it("separates doctor wording from explanation, uncertainty, and questions", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    const understand = Array.from(
-      root.querySelectorAll<HTMLButtonElement>("[data-activity]"),
-    ).find((button) => button.textContent?.trim() === "帮我理解")!;
-    understand.click();
+    openActivity(root, "帮我理解");
 
     const original = "接下来以舒适为主，我们会继续观察症状变化。";
     const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
@@ -76,9 +81,7 @@ describe("This Moment", () => {
   it("does not recast unrelated medical text as a care arrangement", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "帮我理解")!
-      .click();
+    openActivity(root, "帮我理解");
 
     const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
     input.value = "检查结果显示白细胞偏低。";
@@ -91,9 +94,7 @@ describe("This Moment", () => {
   it("refuses open diagnostic requests instead of explaining them", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "帮我理解")!
-      .click();
+    openActivity(root, "帮我理解");
 
     const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
     input.value = "我得了什么病？";
@@ -107,9 +108,7 @@ describe("This Moment", () => {
   it("refuses requests for a treatment decision", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "帮我理解")!
-      .click();
+    openActivity(root, "帮我理解");
 
     const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
     input.value = "我应该接受化疗吗？";
@@ -122,9 +121,7 @@ describe("This Moment", () => {
   it("accepts prognosis wording when it is clearly presented as a doctor quote", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "帮我理解")!
-      .click();
+    openActivity(root, "帮我理解");
 
     const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
     input.value = "医生说现在还不能确定还能活多久。";
@@ -142,9 +139,7 @@ describe("This Moment", () => {
   ])("refuses another explicit medical decision request: %s", (request) => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "帮我理解")!
-      .click();
+    openActivity(root, "帮我理解");
 
     const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
     input.value = request;
@@ -156,9 +151,7 @@ describe("This Moment", () => {
   it("creates one expression draft for a conversation audience", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "我想和某个人说")!
-      .click();
+    openActivity(root, "我想和某个人说");
 
     const audience = root.querySelector<HTMLInputElement>("#expression-audience")!;
     const input = root.querySelector<HTMLTextAreaElement>("#expression-input")!;
@@ -186,9 +179,7 @@ describe("This Moment", () => {
         },
       },
     });
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "我想和某个人说")!
-      .click();
+    openActivity(root, "我想和某个人说");
 
     const audience = root.querySelector<HTMLInputElement>("#expression-audience")!;
     const input = root.querySelector<HTMLTextAreaElement>("#expression-input")!;
@@ -210,9 +201,7 @@ describe("This Moment", () => {
   it("interrupts an explicit crisis expression and returns to both fields", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "我想和某个人说")!
-      .click();
+    openActivity(root, "我想和某个人说");
 
     const audience = root.querySelector<HTMLInputElement>("#expression-audience")!;
     const input = root.querySelector<HTMLTextAreaElement>("#expression-input")!;
@@ -233,9 +222,7 @@ describe("This Moment", () => {
   it("validates the expression audience and original information in order", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "我想和某个人说")!
-      .click();
+    openActivity(root, "我想和某个人说");
 
     root.querySelector<HTMLButtonElement>("[data-submit-expression]")!.click();
     const audience = root.querySelector<HTMLInputElement>("#expression-audience")!;
@@ -252,9 +239,7 @@ describe("This Moment", () => {
   it("shares the crisis interruption with the understanding activity", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "帮我理解")!
-      .click();
+    openActivity(root, "帮我理解");
 
     const original = "我想伤害自己";
     const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
@@ -279,9 +264,7 @@ describe("This Moment", () => {
         },
       },
     });
-    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
-      .find((button) => button.textContent?.trim() === "帮我理解")!
-      .click();
+    openActivity(root, "帮我理解");
 
     const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
     input.value = "接下来以舒适为主，我们会继续观察症状变化。";

@@ -2,10 +2,13 @@ import {
   activities,
   type ApplicationState,
   type CommandId,
+  type InputId,
 } from "./model.ts";
 
 const commandAttribute = (command: CommandId): string =>
   `data-command="${command}"`;
+
+const inputIdAttribute = (inputId: InputId): string => `id="${inputId}"`;
 
 function escapeHtml(value: string): string {
   return value.replace(
@@ -74,7 +77,7 @@ function renderCurrentActivity(state: ApplicationState): string {
 
       <section class="activity-work" aria-label="此刻的我输入">
         <label for="current-input">此刻，你最想整理什么？</label>
-        <textarea id="current-input" rows="8">${escapeHtml(state.current.input)}</textarea>
+        <textarea ${inputIdAttribute("current-input")} rows="8">${escapeHtml(state.current.input)}</textarea>
         ${
           state.current.inputError
             ? '<p class="field-error" role="alert">请先写下你此刻想整理的内容。</p>'
@@ -182,7 +185,7 @@ function renderUnderstandingActivity(state: ApplicationState): string {
 
       <section class="activity-work" aria-label="医疗说明文字输入">
         <label for="understand-input">医生原话或医疗说明</label>
-        <textarea id="understand-input" rows="8">${escapeHtml(state.understanding.input)}</textarea>
+        <textarea ${inputIdAttribute("understand-input")} rows="8">${escapeHtml(state.understanding.input)}</textarea>
         ${
           state.understanding.inputError
             ? '<p class="field-error" role="alert">请先输入需要理解的文字。</p>'
@@ -214,7 +217,7 @@ function renderExpressionActivity(state: ApplicationState): string {
           </div>
           <div class="draft-editor">
             <label for="expression-draft">整理后的话</label>
-            <textarea id="expression-draft" rows="8">${escapeHtml(state.expression.draft)}</textarea>
+            <textarea ${inputIdAttribute("expression-draft")} rows="8">${escapeHtml(state.expression.draft)}</textarea>
             <p class="privacy-note">请确认这些话仍然是你的意思。</p>
           </div>
           <div class="preview-actions">
@@ -243,14 +246,14 @@ function renderExpressionActivity(state: ApplicationState): string {
 
       <section class="activity-work expression-form" aria-label="表达内容输入">
         <label for="expression-audience">想对谁说</label>
-        <input class="text-input" id="expression-audience" type="text" value="${escapeHtml(state.expression.audience)}" />
+        <input class="text-input" ${inputIdAttribute("expression-audience")} type="text" value="${escapeHtml(state.expression.audience)}" />
         ${
           state.expression.fieldError === "audience"
             ? '<p class="field-error" role="alert">请先写下想对谁说。</p>'
             : ""
         }
         <label for="expression-input">我最想说</label>
-        <textarea id="expression-input" rows="7">${escapeHtml(state.expression.input)}</textarea>
+        <textarea ${inputIdAttribute("expression-input")} rows="7">${escapeHtml(state.expression.input)}</textarea>
         ${
           state.expression.fieldError === "input"
             ? '<p class="field-error" role="alert">请先写下最想说的话。</p>'

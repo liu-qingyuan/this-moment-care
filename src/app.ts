@@ -12,6 +12,7 @@ import {
   type ActivityState,
   type ApplicationState,
   type CommandId,
+  type InputId,
 } from "./model.ts";
 import { renderApplicationView } from "./view.ts";
 
@@ -247,7 +248,7 @@ export function renderApp(
     },
   };
 
-  const inputBindings: Record<string, (value: string) => void> = {
+  const inputBindings: Record<InputId, (value: string) => void> = {
     "current-input": (value) => {
       state.current.input = value;
     },
@@ -273,7 +274,7 @@ export function renderApp(
     ) {
       return;
     }
-    inputBindings[input.id]?.(input.value);
+    inputBindings[input.id as InputId]?.(input.value);
   });
 
   root.addEventListener("click", (event) => {

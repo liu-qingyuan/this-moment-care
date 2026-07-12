@@ -9,6 +9,13 @@ export const activities = [
 
 export type ActivityId = (typeof activities)[number]["id"];
 
+export type InputId =
+  | "current-input"
+  | "understand-input"
+  | "expression-audience"
+  | "expression-input"
+  | "expression-draft";
+
 export type CommandId =
   | "submit-current"
   | "copy-current"
