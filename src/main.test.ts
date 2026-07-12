@@ -1,11 +1,16 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderApp } from "./app.ts";
 
 describe("This Moment", () => {
   beforeEach(() => {
     document.body.innerHTML = '<main id="app"></main>';
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("opens the current-moment activity with all four activities available", () => {
@@ -20,7 +25,12 @@ describe("This Moment", () => {
       Array.from(root!.querySelectorAll("nav button"), (button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["此刻的我", "帮我理解", "想说的话", "重要的事"]);
+    ).toEqual([
+      "此刻的我",
+      "帮我理解",
+      "我想和某个人说",
+      "对我重要的事情",
+    ]);
   });
 
   it("switches directly between core activities", () => {
@@ -38,6 +48,9 @@ describe("This Moment", () => {
     expect(
       root.querySelector('nav button[aria-current="page"]')?.textContent?.trim(),
     ).toBe("帮我理解");
+    expect(document.activeElement).toBe(
+      root.querySelector<HTMLElement>("#main-content"),
+    );
   });
 
   it("organizes original information into feelings, worries, and hopes", () => {
@@ -55,6 +68,19 @@ describe("This Moment", () => {
     expect(root.textContent).toContain("我正在感受");
     expect(root.textContent).toContain("我在担心");
     expect(root.textContent).toContain("我现在希望");
+  });
+
+  it("moves focus to the result preview after generation", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+
+    const input = root.querySelector<HTMLTextAreaElement>("#current-input")!;
+    input.value = "我觉得累。我希望今天安静一点。";
+    root.querySelector<HTMLButtonElement>("[data-submit-current]")!.click();
+
+    expect(document.activeElement).toBe(
+      root.querySelector<HTMLElement>(".result-layout"),
+    );
   });
 
   it("interrupts ordinary generation for an explicit crisis signal", () => {
@@ -84,6 +110,17 @@ describe("This Moment", () => {
 
     expect(root.querySelector("h1")?.textContent).toBe("先停一下");
     expect(root.textContent).toContain("联系当地紧急服务");
+  });
+
+  it("interrupts when the person explicitly says they want to self-harm", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+
+    const input = root.querySelector<HTMLTextAreaElement>("#current-input")!;
+    input.value = "我想伤害自己";
+    root.querySelector<HTMLButtonElement>("[data-submit-current]")!.click();
+
+    expect(root.querySelector("h1")?.textContent).toBe("先停一下");
   });
 
   it("returns from a crisis interruption without discarding the input", () => {
@@ -141,6 +178,9 @@ describe("This Moment", () => {
     expect(writes[0]).toContain("原始信息");
     expect(writes[0]).toContain("我现在希望");
     expect(root.textContent).toContain("已复制");
+    expect(document.activeElement).toBe(
+      root.querySelector<HTMLButtonElement>("[data-copy-current]"),
+    );
   });
 
   it("returns to editing without losing original information", () => {
@@ -188,6 +228,26 @@ describe("This Moment", () => {
       freshRoot.querySelector<HTMLTextAreaElement>("#current-input")?.value,
     ).toBe("");
     expect(freshRoot.textContent).not.toContain("这是一段只属于当前会话的内容。");
+  });
+
+  it("does not write session content to browser persistence APIs", () => {
+    const localStorageWrite = vi.fn();
+    const sessionStorageWrite = vi.fn();
+    const indexedDbOpen = vi.fn();
+    vi.stubGlobal("localStorage", { setItem: localStorageWrite });
+    vi.stubGlobal("sessionStorage", { setItem: sessionStorageWrite });
+    vi.stubGlobal("indexedDB", { open: indexedDbOpen });
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+
+    const input = root.querySelector<HTMLTextAreaElement>("#current-input")!;
+    input.value = "这是一段敏感内容。我希望今天安静一点。";
+    root.querySelector<HTMLButtonElement>("[data-submit-current]")!.click();
+
+    expect(localStorageWrite).not.toHaveBeenCalled();
+    expect(sessionStorageWrite).not.toHaveBeenCalled();
+    expect(indexedDbOpen).not.toHaveBeenCalled();
+    expect(document.cookie).toBe("");
   });
 
   it("reports clipboard failure without leaving the preview", async () => {

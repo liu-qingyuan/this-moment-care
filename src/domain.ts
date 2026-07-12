@@ -5,7 +5,7 @@ export interface OrganizedReflection {
 }
 
 const explicitCrisisPatterns = [
-  /我(?:现在)?(?:要|准备|打算)伤害自己/u,
+  /我(?:现在)?(?:要|准备|打算|想)伤害自己/u,
   /我(?:现在)?(?:要|准备|打算|想)自杀/u,
   /我不想活了/u,
   /我(?:要|准备|打算)结束(?:自己|我的)?生命/u,

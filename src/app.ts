@@ -8,8 +8,8 @@ import {
 const activities = [
   { id: "current", label: "此刻的我" },
   { id: "understand", label: "帮我理解" },
-  { id: "express", label: "想说的话" },
-  { id: "important", label: "重要的事" },
+  { id: "express", label: "我想和某个人说" },
+  { id: "important", label: "对我重要的事情" },
 ] as const;
 
 type ActivityId = (typeof activities)[number]["id"];
@@ -57,7 +57,7 @@ function escapeHtml(value: string): string {
 function renderCurrentActivity(state: ApplicationState): string {
   if (state.currentResult) {
     return `
-      <main id="main-content" class="activity-layout result-layout">
+      <main id="main-content" class="activity-layout result-layout" tabindex="-1">
         <section class="activity-intro" aria-labelledby="activity-title">
           <p class="eyebrow">This Moment</p>
           <h1 id="activity-title">此刻的我</h1>
@@ -98,7 +98,7 @@ function renderCurrentActivity(state: ApplicationState): string {
   }
 
   return `
-    <main id="main-content" class="activity-layout">
+    <main id="main-content" class="activity-layout" tabindex="-1">
       <section class="activity-intro" aria-labelledby="activity-title">
         <p class="eyebrow">This Moment</p>
         <h1 id="activity-title">此刻的我</h1>
@@ -155,7 +155,7 @@ function renderActivity(state: ApplicationState): string {
   const activity = activities.find(({ id }) => id === state.activeActivity)!;
 
   return `
-    <main id="main-content" class="activity-layout activity-placeholder">
+    <main id="main-content" class="activity-layout activity-placeholder" tabindex="-1">
       <section class="activity-intro" aria-labelledby="activity-title">
         <p class="eyebrow">This Moment</p>
         <h1 id="activity-title">${activity.label}</h1>
@@ -181,7 +181,7 @@ export function renderApp(
     root.innerHTML = `
       <div class="app-shell">
         <header class="app-header${state.crisisInterrupted ? " crisis-header" : ""}">
-          <a class="brand" href="#main-content" aria-label="此刻首页">此刻</a>
+          <a class="brand" href="#main-content" aria-label="跳到主要内容">此刻</a>
           ${
             state.crisisInterrupted
               ? ""
@@ -209,6 +209,7 @@ export function renderApp(
       button.addEventListener("click", () => {
         state.activeActivity = button.dataset.activity as ActivityId;
         render();
+        root.querySelector<HTMLElement>("#main-content")?.focus();
       });
     });
 
@@ -238,6 +239,7 @@ export function renderApp(
         state.currentResult = organizeReflection(state.currentInput);
         state.copyFeedback = undefined;
         render();
+        root.querySelector<HTMLElement>(".result-layout")?.focus();
       });
 
     root
@@ -253,6 +255,9 @@ export function renderApp(
           state.copyFeedback = "error";
         }
         render();
+        root
+          .querySelector<HTMLButtonElement>("[data-copy-current]")
+          ?.focus();
       });
 
     root
