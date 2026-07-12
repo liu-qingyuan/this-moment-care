@@ -20,13 +20,17 @@ const explicitCrisisPatterns = [
 ];
 
 const unsupportedMedicalRequestPatterns = [
-  /^(?:请|能否|可以)?(?:帮我)?(?:判断|诊断)/u,
-  /^(?:我)?(?:到底|可能)?得了什么病/u,
-  /^(?:我)?是不是(?:癌症|肿瘤|绝症)/u,
-  /^(?:我)?还能活多久/u,
-  /^(?:我)?(?:应该|该|要不要|是否)(?:接受|做|进行|吃|用).*(?:治疗|化疗|手术|药)/u,
+  /^(?:帮我)?(?:判断|诊断)/u,
+  /^(?:我)?(?:到底|可能)?(?:得了|患了|有)(?:什么病|癌症|肿瘤|绝症)/u,
+  /^(?:我)?(?:是不是|是否是|可能是)(?:癌症|肿瘤|绝症)/u,
+  /^(?:我)?(?:还能|能|可以)(?:活|撑)(?:多久|多长时间)/u,
+  /^(?:我)?(?:还有|剩下)(?:多久|多长时间)/u,
+  /^(?:我)?(?:应该|该|要不要|是否|需不需要|需要不需要|需要)(?:接受|做|进行|吃|用)?.*(?:治疗|化疗|手术|药)/u,
   /^(?:我)?(?:应该|该)怎么治疗/u,
 ];
+
+const medicalSourcePrefix =
+  /^(?:医生|医护|护士|报告|检查结果|处方|病历)(?:说|告诉我|写着|显示|提到|建议)/u;
 
 const feelingWords = ["感到", "觉得", "害怕", "难过", "平静", "孤单", "累"];
 const worryWords = ["担心", "害怕", "不安", "怕"];
@@ -60,7 +64,13 @@ export function hasExplicitCrisisSignal(text: string): boolean {
 }
 
 export function isUnsupportedMedicalRequest(text: string): boolean {
-  const request = text.trim();
+  const source = text.trim();
+  if (medicalSourcePrefix.test(source)) return false;
+
+  const request = source.replace(
+    /^(?:请问|请|麻烦|可以|能否|能不能)(?:告诉我|帮我|说明)?[，,\s]*/u,
+    "",
+  );
   return unsupportedMedicalRequestPatterns.some((pattern) => pattern.test(request));
 }
 

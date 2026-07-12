@@ -134,6 +134,25 @@ describe("This Moment", () => {
     expect(root.textContent).not.toContain("这里不能替你判断");
   });
 
+  it.each([
+    "我要不要化疗？",
+    "我需要做手术吗？",
+    "请问我是不是癌症？",
+    "可以告诉我还有多长时间吗？",
+  ])("refuses another explicit medical decision request: %s", (request) => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "帮我理解")!
+      .click();
+
+    const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
+    input.value = request;
+    root.querySelector<HTMLButtonElement>("[data-submit-understand]")!.click();
+
+    expect(root.textContent).toContain("不能判断疾病、预后或治疗");
+  });
+
   it("shares the crisis interruption with the understanding activity", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);

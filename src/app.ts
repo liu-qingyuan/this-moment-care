@@ -10,6 +10,7 @@ import {
   type ActivityId,
   type ActivityState,
   type ApplicationState,
+  type CommandId,
 } from "./model.ts";
 import { renderApplicationView } from "./view.ts";
 
@@ -118,7 +119,7 @@ export function renderApp(
     render(focusSelector);
   };
 
-  const commandHandlers: Record<string, () => void | Promise<void>> = {
+  const commandHandlers: Record<CommandId, () => void | Promise<void>> = {
     "submit-current": () => {
       if (!requireInput(state.current, "#current-input")) return;
       if (hasExplicitCrisisSignal(state.current.input)) {
@@ -216,7 +217,7 @@ export function renderApp(
       return;
     }
 
-    const command = button.dataset.command;
+    const command = button.dataset.command as CommandId | undefined;
     if (command) void commandHandlers[command]?.();
   });
 

@@ -9,6 +9,16 @@ export const activities = [
 
 export type ActivityId = (typeof activities)[number]["id"];
 
+export type CommandId =
+  | "submit-current"
+  | "copy-current"
+  | "revise-current"
+  | "submit-understand"
+  | "copy-understand"
+  | "revise-understand"
+  | "crisis-return"
+  | "crisis-clear";
+
 export interface ActivityState<Result> {
   input: string;
   result?: Result;

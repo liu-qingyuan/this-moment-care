@@ -1,4 +1,11 @@
-import { activities, type ApplicationState } from "./model.ts";
+import {
+  activities,
+  type ApplicationState,
+  type CommandId,
+} from "./model.ts";
+
+const commandAttribute = (command: CommandId): string =>
+  `data-command="${command}"`;
 
 function escapeHtml(value: string): string {
   return value.replace(
@@ -42,8 +49,8 @@ function renderCurrentActivity(state: ApplicationState): string {
             <p>${escapeHtml(state.current.result.hopes)}</p>
           </div>
           <div class="preview-actions">
-            <button class="primary-action" type="button" data-copy-current data-command="copy-current">确认并复制</button>
-            <button class="secondary-action" type="button" data-revise-current data-command="revise-current">返回修改</button>
+            <button class="primary-action" type="button" data-copy-current ${commandAttribute("copy-current")}>确认并复制</button>
+            <button class="secondary-action" type="button" data-revise-current ${commandAttribute("revise-current")}>返回修改</button>
             <p class="action-feedback" role="status" aria-live="polite">${
               state.current.copyFeedback === "success"
                 ? "已复制"
@@ -74,7 +81,7 @@ function renderCurrentActivity(state: ApplicationState): string {
             : ""
         }
         <p class="privacy-note">内容只留在当前页面，刷新或关闭后不会保留。</p>
-        <button class="primary-action" type="button" data-submit-current data-command="submit-current">确认并整理</button>
+        <button class="primary-action" type="button" data-submit-current ${commandAttribute("submit-current")}>确认并整理</button>
       </section>
     </main>
   `;
@@ -96,8 +103,8 @@ function renderCrisisInterruption(): string {
         </div>
 
         <p class="crisis-limit">此刻不能判断风险，也不能替代紧急帮助。</p>
-        <button class="primary-action" type="button" data-crisis-return data-command="crisis-return">我已看到，返回</button>
-        <button class="text-action" type="button" data-crisis-clear data-command="crisis-clear">清除刚才的内容</button>
+        <button class="primary-action" type="button" data-crisis-return ${commandAttribute("crisis-return")}>我已看到，返回</button>
+        <button class="text-action" type="button" data-crisis-clear ${commandAttribute("crisis-clear")}>清除刚才的内容</button>
       </section>
     </main>
   `;
@@ -117,7 +124,7 @@ function renderUnderstandingActivity(state: ApplicationState): string {
           <h2 id="boundary-title">这里不能替你判断</h2>
           <p>此刻不能判断疾病、预后或治疗，也不能替你选择治疗方案。</p>
           <p>请输入医生原话或医疗说明文字，我们可以帮助你区分解释、不确定内容和待确认问题。</p>
-          <button class="secondary-action" type="button" data-revise-understand data-command="revise-understand">返回修改</button>
+          <button class="secondary-action" type="button" data-revise-understand ${commandAttribute("revise-understand")}>返回修改</button>
         </section>
       </main>
     `;
@@ -150,8 +157,8 @@ function renderUnderstandingActivity(state: ApplicationState): string {
             <p>${escapeHtml(state.understanding.result.confirmationQuestion)}</p>
           </div>
           <div class="preview-actions">
-            <button class="primary-action" type="button" data-copy-understand data-command="copy-understand">确认并复制</button>
-            <button class="secondary-action" type="button" data-revise-understand data-command="revise-understand">返回修改</button>
+            <button class="primary-action" type="button" data-copy-understand ${commandAttribute("copy-understand")}>确认并复制</button>
+            <button class="secondary-action" type="button" data-revise-understand ${commandAttribute("revise-understand")}>返回修改</button>
             <p class="action-feedback" role="status" aria-live="polite">${
               state.understanding.copyFeedback === "success"
                 ? "已复制"
@@ -182,7 +189,7 @@ function renderUnderstandingActivity(state: ApplicationState): string {
             : ""
         }
         <p class="privacy-note">不上传文件，不判断疾病；内容只留在当前页面。</p>
-        <button class="primary-action" type="button" data-submit-understand data-command="submit-understand">确认并解释</button>
+        <button class="primary-action" type="button" data-submit-understand ${commandAttribute("submit-understand")}>确认并解释</button>
       </section>
     </main>
   `;
