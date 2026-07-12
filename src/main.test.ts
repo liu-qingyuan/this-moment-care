@@ -53,6 +53,91 @@ describe("This Moment", () => {
     );
   });
 
+  it("separates doctor wording from explanation, uncertainty, and questions", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    const understand = Array.from(
+      root.querySelectorAll<HTMLButtonElement>("[data-activity]"),
+    ).find((button) => button.textContent?.trim() === "帮我理解")!;
+    understand.click();
+
+    const original = "接下来以舒适为主，我们会继续观察症状变化。";
+    const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
+    input.value = original;
+    root.querySelector<HTMLButtonElement>("[data-submit-understand]")!.click();
+
+    expect(root.querySelector(".source-block p")?.textContent).toBe(original);
+    expect(root.textContent).toContain("通俗解释");
+    expect(root.textContent).toContain("还不能确定");
+    expect(root.textContent).toContain("可以向医护确认");
+    expect(root.textContent).toContain("更重视让你舒服一些");
+  });
+
+  it("refuses open diagnostic requests instead of explaining them", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "帮我理解")!
+      .click();
+
+    const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
+    input.value = "我得了什么病？";
+    root.querySelector<HTMLButtonElement>("[data-submit-understand]")!.click();
+
+    expect(root.textContent).toContain("不能判断疾病、预后或治疗");
+    expect(root.textContent).toContain("请输入医生原话或医疗说明文字");
+    expect(root.textContent).not.toContain("通俗解释");
+  });
+
+  it("shares the crisis interruption with the understanding activity", () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    renderApp(root);
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "帮我理解")!
+      .click();
+
+    const original = "我想伤害自己";
+    const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
+    input.value = original;
+    root.querySelector<HTMLButtonElement>("[data-submit-understand]")!.click();
+    expect(root.querySelector("h1")?.textContent).toBe("先停一下");
+
+    root.querySelector<HTMLButtonElement>("[data-crisis-return]")!.click();
+    expect(root.querySelector("h1")?.textContent).toBe("帮我理解");
+    expect(
+      root.querySelector<HTMLTextAreaElement>("#understand-input")?.value,
+    ).toBe(original);
+  });
+
+  it("copies the structured medical explanation only after confirmation", async () => {
+    const root = document.querySelector<HTMLElement>("#app")!;
+    const writes: string[] = [];
+    renderApp(root, {
+      clipboard: {
+        writeText: async (text) => {
+          writes.push(text);
+        },
+      },
+    });
+    Array.from(root.querySelectorAll<HTMLButtonElement>("[data-activity]"))
+      .find((button) => button.textContent?.trim() === "帮我理解")!
+      .click();
+
+    const input = root.querySelector<HTMLTextAreaElement>("#understand-input")!;
+    input.value = "接下来以舒适为主，我们会继续观察症状变化。";
+    root.querySelector<HTMLButtonElement>("[data-submit-understand]")!.click();
+    expect(writes).toEqual([]);
+
+    root.querySelector<HTMLButtonElement>("[data-copy-understand]")!.click();
+    await Promise.resolve();
+
+    expect(writes).toHaveLength(1);
+    expect(writes[0]).toContain("原始信息");
+    expect(writes[0]).toContain("还不能确定");
+    expect(writes[0]).toContain("可以向医护确认");
+    expect(root.textContent).toContain("已复制");
+  });
+
   it("organizes original information into feelings, worries, and hopes", () => {
     const root = document.querySelector<HTMLElement>("#app")!;
     renderApp(root);

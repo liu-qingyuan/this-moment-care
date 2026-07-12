@@ -318,9 +318,30 @@ textarea:focus-visible {
   white-space: pre-wrap;
 }
 
-.reflection-section:nth-of-type(3) {
+.reflection-section:nth-of-type(3),
+.uncertainty-section {
   padding-left: 18px;
   border-left: 3px solid var(--rose);
+}
+
+.confirmation-section {
+  color: #35594c;
+}
+
+.boundary-notice {
+  padding: 26px 0;
+  border-top: 1px solid #d9c7c4;
+  border-bottom: 1px solid #d9c7c4;
+}
+
+.boundary-notice h2 {
+  color: #7d504d;
+  font-size: 1.125rem;
+}
+
+.boundary-notice p + p {
+  margin-top: 14px;
+  color: var(--muted);
 }
 
 .preview-actions {
