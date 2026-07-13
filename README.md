@@ -12,6 +12,7 @@ The responsive application shell and the first complete core activity, "此刻�
 npm install
 npm run dev
 npm run check
+npm run deploy:care
 ```
 
-No deployment target, external AI service, account system, backend, or sensitive-data storage is configured. Prototype content is deterministic and local to the current page session.
+The static production target is `https://care.q1ngyuan.top`. See [docs/deployment-care.md](docs/deployment-care.md) for first-time server preparation, routine releases, health checks, logs, and rollback. No external AI service, account system, backend, analytics, or sensitive-data storage is configured; prototype content remains deterministic and local to the current page session.

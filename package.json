@@ -7,7 +7,9 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc && vite build",
     "test": "vitest run",
-    "check": "npm run test && npm run build"
+    "check": "npm run test && npm run build",
+    "bootstrap:care": "bash scripts/bootstrap-care.sh",
+    "deploy:care": "bash scripts/deploy-care.sh"
   },
   "devDependencies": {
     "jsdom": "^29.1.1",
@@ -16,4 +18,3 @@
     "vitest": "^3.2.4"
   }
 }
-
