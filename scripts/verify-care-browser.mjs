@@ -25,12 +25,22 @@ function recordRequests(page) {
 
 function assertSessionContentStayedLocal(requests, sessionContent) {
   const unsafeRequest = requests.find(
-    (request) =>
-      !["GET", "HEAD"].includes(request.method) || request.postData !== null,
+    (request) => {
+      const url = new URL(request.url);
+      const isAllowedStaticRequest =
+        (url.origin === origin && url.pathname.startsWith("/assets/")) ||
+        (url.origin === "https://fonts.googleapis.com" && url.pathname === "/css2") ||
+        (url.origin === "https://fonts.gstatic.com" && url.pathname.startsWith("/s/"));
+      return (
+        !["GET", "HEAD"].includes(request.method) ||
+        request.postData !== null ||
+        !isAllowedStaticRequest
+      );
+    },
   );
   assert(
     unsafeRequest === undefined,
-    `Unexpected content-capable request: ${unsafeRequest?.method} ${unsafeRequest?.url}`,
+    `Unexpected interaction request: ${unsafeRequest?.method} ${unsafeRequest?.url}`,
   );
 
   const leakedContent = sessionContent.find((content) =>
@@ -59,6 +69,7 @@ async function verifyDesktop(browser) {
     .locator(".activity-layout")
     .evaluate((element) => getComputedStyle(element, "::before").backgroundImage);
   assert(currentImage.includes("/assets/current-moment-desk.png"), "Desktop photography is missing.");
+  requests.length = 0;
 
   await page.locator("#current-input").fill(original);
   await page.locator("[data-submit-current]").click();
@@ -100,6 +111,7 @@ async function verifyMobile(browser) {
   const requests = recordRequests(page);
   const expression = "部署验收：谢谢你一直陪着我，我很珍惜我们一起度过的时间。";
   const finalDraft = "姐姐，谢谢你一直陪着我。";
+  const importantMatter = "和女儿一起做饭的下午，因为那是我觉得最放松、最像家的时候。";
   const crisisSignal = "我想伤害自己";
 
   await page.goto(publicUrl.href, { waitUntil: "networkidle" });
@@ -118,6 +130,7 @@ async function verifyMobile(browser) {
       navState.width === navState.viewportWidth,
     "Mobile navigation is not fixed to the viewport.",
   );
+  requests.length = 0;
 
   const expressionImageResponse = page.waitForResponse(
     (response) => response.url().endsWith("/assets/expression-letter.png"),
@@ -143,12 +156,22 @@ async function verifyMobile(browser) {
     "Mobile copy confirmation failed.",
   );
 
+  await page.locator("[data-activity=important]").click();
+  await page.locator("#important-input").fill(importantMatter);
+  await page.locator("[data-submit-important]").click();
+  const importantList = await page.locator(".important-list").innerText();
+  assert(
+    importantList.includes("和女儿一起做饭的下午") && importantList.includes("为什么重要"),
+    "Important matter was not added to the current session.",
+  );
+
+  await page.locator("[data-activity=express]").click();
   await page.locator("[data-revise-expression]").click();
   await page.locator("#expression-input").fill(crisisSignal);
   await page.locator("[data-submit-expression]").click();
   await page.getByRole("heading", { name: "先停一下" }).waitFor();
   assert((await page.locator(".primary-nav").count()) === 0, "Mobile nav did not yield to crisis interruption.");
-  assertSessionContentStayedLocal(requests, [expression, finalDraft, crisisSignal]);
+  assertSessionContentStayedLocal(requests, [expression, finalDraft, importantMatter, crisisSignal]);
   await context.close();
 }
 
