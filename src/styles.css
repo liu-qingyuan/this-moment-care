@@ -385,15 +385,24 @@ textarea,
 }
 
 textarea {
+  --writing-line-step: 2.125rem;
+  --writing-pad-block: 18px;
   min-height: 260px;
-  padding: 18px 22px 18px 40px;
+  padding: var(--writing-pad-block) 22px var(--writing-pad-block) 40px;
   resize: vertical;
   background-image:
     linear-gradient(90deg, transparent 0, transparent 25px, rgba(181, 68, 37, 0.34) 25px, rgba(181, 68, 37, 0.34) 26px, transparent 26px),
-    repeating-linear-gradient(180deg, transparent 0, transparent 33px, rgba(32, 39, 35, 0.09) 34px);
-  background-size: 100% 100%, 100% 34px;
+    repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent calc(var(--writing-line-step) - 1px),
+      rgba(32, 39, 35, 0.09) calc(var(--writing-line-step) - 1px),
+      rgba(32, 39, 35, 0.09) var(--writing-line-step)
+    );
+  background-position: 0 0, 0 var(--writing-pad-block);
+  background-size: 100% 100%, 100% var(--writing-line-step);
   font-size: 1rem;
-  line-height: 2.1;
+  line-height: var(--writing-line-step);
 }
 
 .current-input-layout textarea,
@@ -1289,9 +1298,10 @@ textarea:focus-visible,
   }
 
   textarea {
+    --writing-pad-block: 16px;
     height: 230px;
     min-height: 230px;
-    padding: 16px 16px 16px 34px;
+    padding: var(--writing-pad-block) 16px var(--writing-pad-block) 34px;
     font-size: 1rem;
   }
 

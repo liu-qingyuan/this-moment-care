@@ -40,6 +40,8 @@ The implementation uses separate local photography rather than rendering the UI 
 
 Browser-rendered evidence is saved in [implementation-screenshots](implementation-screenshots/). The set covers representative desktop and mobile input, result, important-matter, and crisis states at 1440x900 and 390x844.
 
+The lined-paper textarea alignment fix is recorded in [desktop-writing-line-alignment.png](implementation-screenshots/desktop-writing-line-alignment.png) and [mobile-writing-line-alignment.png](implementation-screenshots/mobile-writing-line-alignment.png), each with four lines of text.
+
 ## Extracted design direction
 
 - Mood: warm, lived-in, quiet, and dignified without becoming sentimental or memorial-like.
