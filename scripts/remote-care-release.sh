@@ -52,7 +52,14 @@ run_internal_check() {
     return
   fi
 
-  [[ "$(curl -fsS --max-time 20 http://127.0.0.1:18082/healthz)" == "ok" ]]
+  local attempt response
+  for attempt in {1..20}; do
+    if response="$(curl -fsS --connect-timeout 2 --max-time 5 http://127.0.0.1:18082/healthz 2>/dev/null)" && [[ "${response}" == "ok" ]]; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
 }
 
 run_origin_check() {
