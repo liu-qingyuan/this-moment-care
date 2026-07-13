@@ -9,7 +9,7 @@ import {
 export function renderExpressionActivity(state: ExpressionActivityState): string {
   if (state.draft !== undefined) {
     return `
-      <main id="main-content" class="activity-layout result-layout" tabindex="-1">
+      <main id="main-content" class="activity-layout result-layout expression-result-layout" tabindex="-1">
         <section class="activity-intro" aria-labelledby="activity-title">
           <p class="eyebrow">This Moment</p><h1 id="activity-title">我想和某个人说</h1>
           <p>请确认整理后的话仍然是你的意思。</p>
@@ -22,7 +22,7 @@ export function renderExpressionActivity(state: ExpressionActivityState): string
           <div class="draft-editor">
             <label for="expression-draft">整理后的话</label>
             <textarea ${inputIdAttribute("expression-draft")} rows="8">${escapeHtml(state.draft)}</textarea>
-            <p class="privacy-note">请确认这些话仍然是你的意思。</p>
+            <p class="privacy-note">请确认这些话仍然是你的意思；此刻不会联系或发送给任何人。</p>
           </div>
           <div class="preview-actions">
             <button class="primary-action" type="button" data-copy-expression ${commandAttribute("copy-expression")}>确认并复制</button>
@@ -35,7 +35,7 @@ export function renderExpressionActivity(state: ExpressionActivityState): string
   }
 
   return `
-    <main id="main-content" class="activity-layout" tabindex="-1">
+    <main id="main-content" class="activity-layout input-layout expression-input-layout" tabindex="-1">
       <section class="activity-intro" aria-labelledby="activity-title">
         <p class="eyebrow">This Moment</p><h1 id="activity-title">我想和某个人说</h1>
         <p>写下对象和你最想表达的原话，只整理成一份草稿。</p>

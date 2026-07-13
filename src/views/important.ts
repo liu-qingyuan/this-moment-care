@@ -12,13 +12,14 @@ const importantIndexAttribute = (index: number): string =>
 export function renderImportantActivity(state: ImportantActivityState): string {
   if (state.previewAll) {
     return `
-      <main id="main-content" class="activity-layout result-layout" tabindex="-1">
+      <main id="main-content" class="activity-layout result-layout important-result-layout" tabindex="-1">
         <section class="activity-intro" aria-labelledby="activity-title">
           <p class="eyebrow">This Moment</p><h1 id="activity-title">对我重要的事情</h1>
           <p>这是当前会话中整理的全部内容。</p>
         </section>
         <section class="activity-work reflection-preview" aria-label="重要事项最终预览">
           ${state.matters.map((matter) => `<article class="important-item"><h2>${escapeHtml(matter.what)}</h2><p class="item-label">为什么重要</p><p>${escapeHtml(matter.why)}</p></article>`).join("")}
+          <p class="privacy-note result-privacy">全部内容只属于当前会话，复制前仍可返回修改。</p>
           <div class="preview-actions">
             <button class="primary-action" type="button" data-copy-important ${commandAttribute("copy-important")}>确认并复制</button>
             <button class="secondary-action" type="button" data-back-important ${commandAttribute("back-important")}>返回修改</button>
@@ -30,7 +31,7 @@ export function renderImportantActivity(state: ImportantActivityState): string {
   }
 
   return `
-    <main id="main-content" class="important-page" tabindex="-1">
+    <main id="main-content" class="important-page important-input-layout" tabindex="-1">
       <section class="activity-intro" aria-labelledby="activity-title">
         <p class="eyebrow">This Moment</p><h1 id="activity-title">对我重要的事情</h1>
         <p>一次整理一件事，只在当前页面保留。</p>

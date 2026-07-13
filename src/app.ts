@@ -103,7 +103,9 @@ export function renderApp(
   const render = (focusSelector?: string) => {
     root.innerHTML = renderApplicationView(state);
     if (focusSelector) {
-      root.querySelector<HTMLElement>(focusSelector)?.focus();
+      root.querySelector<HTMLElement>(focusSelector)?.focus({
+        preventScroll: true,
+      });
     }
   };
 

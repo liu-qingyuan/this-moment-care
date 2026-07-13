@@ -9,7 +9,9 @@ export function renderCrisisInterruption(): string {
         <p class="crisis-lead">你写的内容可能表示你正处于危险中。此刻不会继续整理。</p>
         <div class="crisis-actions" aria-labelledby="immediate-help-title">
           <h2 id="immediate-help-title">如果危险就在现在</h2>
-          <p>联系当地紧急服务</p><p>请身边可信任的人陪着你</p><p>不要独处</p>
+          <p><span aria-hidden="true">01</span><strong>联系当地紧急服务</strong><span aria-hidden="true">→</span></p>
+          <p><span aria-hidden="true">02</span><strong>请身边可信任的人陪着你</strong><span aria-hidden="true">→</span></p>
+          <p><span aria-hidden="true">03</span><strong>不要独处</strong><span aria-hidden="true">→</span></p>
         </div>
         <p class="crisis-limit">此刻不能判断风险，也不能替代紧急帮助。</p>
         <button class="primary-action" type="button" data-crisis-return ${commandAttribute("crisis-return")}>我已看到，返回</button>

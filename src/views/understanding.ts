@@ -11,7 +11,7 @@ export function renderUnderstandingActivity(
 ): string {
   if (state.boundaryNotice) {
     return `
-      <main id="main-content" class="activity-layout boundary-layout" tabindex="-1">
+      <main id="main-content" class="activity-layout boundary-layout understanding-boundary-layout" tabindex="-1">
         <section class="activity-intro" aria-labelledby="activity-title">
           <p class="eyebrow">This Moment</p><h1 id="activity-title">帮我理解</h1>
           <p>这里只处理医生已经说过的话或医疗说明文字。</p>
@@ -28,7 +28,7 @@ export function renderUnderstandingActivity(
 
   if (state.result) {
     return `
-      <main id="main-content" class="activity-layout result-layout" tabindex="-1">
+      <main id="main-content" class="activity-layout result-layout understanding-result-layout" tabindex="-1">
         <section class="activity-intro" aria-labelledby="activity-title">
           <p class="eyebrow">This Moment</p><h1 id="activity-title">帮我理解</h1>
           <p>原话、解释和仍需确认的内容保持分开。</p>
@@ -38,6 +38,7 @@ export function renderUnderstandingActivity(
           <div class="reflection-section"><h2>通俗解释</h2><p>${escapeHtml(state.result.plainLanguage)}</p></div>
           <div class="reflection-section uncertainty-section"><h2>还不能确定</h2><p>${escapeHtml(state.result.uncertainty)}</p></div>
           <div class="reflection-section confirmation-section"><h2>可以向医护确认</h2><p>${escapeHtml(state.result.confirmationQuestion)}</p></div>
+          <p class="privacy-note result-privacy">内容只留在当前页面，刷新或关闭后不会保留。</p>
           <div class="preview-actions">
             <button class="primary-action" type="button" data-copy-understand ${commandAttribute("copy-understand")}>确认并复制</button>
             <button class="secondary-action" type="button" data-revise-understand ${commandAttribute("revise-understand")}>返回修改</button>
@@ -49,7 +50,7 @@ export function renderUnderstandingActivity(
   }
 
   return `
-    <main id="main-content" class="activity-layout" tabindex="-1">
+    <main id="main-content" class="activity-layout input-layout understanding-input-layout" tabindex="-1">
       <section class="activity-intro" aria-labelledby="activity-title">
         <p class="eyebrow">This Moment</p><h1 id="activity-title">帮我理解</h1>
         <p>输入医生原话或医疗说明文字，我们只帮助你读得更清楚。</p>
