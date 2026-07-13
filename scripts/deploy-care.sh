@@ -8,7 +8,7 @@ deploy_path="${DEPLOY_PATH:-/opt/this-moment-care}"
 public_url="${PUBLIC_URL:-https://care.q1ngyuan.top}"
 public_host="${PUBLIC_HOST:-$(node -e 'process.stdout.write(new URL(process.argv[1]).hostname)' "${public_url}")}"
 origin_url="${ORIGIN_URL:-https://${public_host}}"
-public_check_cmd="${PUBLIC_CHECK_CMD:-node scripts/verify-care.mjs}"
+public_check_cmd="${PUBLIC_CHECK_CMD:-npm run verify:care}"
 ssh_bin="${SSH_BIN:-ssh}"
 scp_bin="${SCP_BIN:-scp}"
 remote_script="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/remote-care-release.sh"
@@ -79,6 +79,7 @@ if ! PUBLIC_URL="${public_url}" bash -o pipefail -c "${public_check_cmd}"; then
   log "Public verification failed; requesting rollback"
   remote_action rollback "${release_id}" || fail "Public verification failed and remote rollback also failed."
   remote_action verify-restored || fail "Rollback completed but the restored release did not pass verification."
+  PUBLIC_URL="${public_url}" bash -o pipefail -c "${public_check_cmd}" || fail "Rollback completed but the restored public URL did not pass verification."
   fail "Public verification failed; previous release restored."
 fi
 

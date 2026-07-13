@@ -15,7 +15,7 @@ This Moment is published as static files. The production server does not install
 
 ## First server preparation
 
-Prerequisites are local Node/npm, Git, `ssh`, `scp`, and `tar`; the server needs Docker Compose, Nginx, OpenSSL, curl, and systemd. DNS must already proxy `care.q1ngyuan.top` to the host through Cloudflare.
+Prerequisites are local Node/npm, Git, `ssh`, `scp`, `tar`, and the Chromium runtime installed by Playwright; the server needs Docker Compose, Nginx, OpenSSL, curl, and systemd. DNS must already proxy `care.q1ngyuan.top` to the host through Cloudflare.
 
 From a trusted checkout:
 
@@ -33,7 +33,7 @@ Commit all intended source changes first, then run:
 npm run deploy:care
 ```
 
-The command runs the local quality gate, uploads one versioned static archive, activates it, checks the loopback container and origin TLS route, then verifies the Cloudflare HTTPS page title and a representative local asset. A failed activation or verification restores `previous` and rechecks the restored service.
+The command runs the local quality gate, uploads one versioned static archive, activates it, checks the loopback container and origin TLS route, then verifies the Cloudflare HTTPS identity plus desktop and mobile browser workflows. Browser verification covers local photography, fixed mobile navigation, generated previews, copy confirmation, crisis interruption, and the absence of session-content requests. A failed activation or verification restores `previous` and repeats the internal, origin, and public checks against the restored service.
 
 Supported overrides:
 
@@ -45,7 +45,7 @@ Supported overrides:
 | `PUBLIC_HOST` | `care.q1ngyuan.top` | Host Nginx and origin certificate name during bootstrap |
 | `ORIGIN_URL` | `https://<PUBLIC_HOST>` | Direct origin route verified over loopback TLS |
 | `CHECK_CMD` | `npm run check` | Local pre-upload quality command |
-| `PUBLIC_CHECK_CMD` | `node scripts/verify-care.mjs` | Public identity check command |
+| `PUBLIC_CHECK_CMD` | `npm run verify:care` | Public identity and browser workflow check command |
 
 Overrides are explicit environment variables, for example:
 
@@ -61,6 +61,7 @@ Container health is separate from origin and public routing:
 ssh q1ngyuan.top 'curl -fsS http://127.0.0.1:18082/healthz'
 ssh q1ngyuan.top 'curl -fsS --resolve care.q1ngyuan.top:443:127.0.0.1 --cacert /opt/this-moment-care/tls/care.q1ngyuan.top.crt https://care.q1ngyuan.top/'
 node scripts/verify-care.mjs https://care.q1ngyuan.top
+npm run verify:care
 ```
 
 Confirm that Docker exposes no public port:

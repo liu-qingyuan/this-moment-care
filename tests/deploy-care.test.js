@@ -45,6 +45,23 @@ function writeExecutable(path, contents) {
   chmodSync(path, 0o755);
 }
 
+function createRemoteReleaseFixture() {
+  const deployRoot = mkdtempSync(join(tmpdir(), "this-moment-remote-test-"));
+  const oldRelease = join(deployRoot, "releases", "old-release");
+  const artifactRoot = mkdtempSync(join(tmpdir(), "this-moment-artifact-"));
+  const transferRoot = mkdtempSync(join(tmpdir(), "this-moment-transfer-"));
+  const tarball = join(transferRoot, "release.tar.gz");
+  mkdirSync(oldRelease, { recursive: true });
+  writeFileSync(join(oldRelease, "index.html"), "old release\n");
+  symlinkSync("releases/old-release", join(deployRoot, "current"));
+  writeFileSync(join(deployRoot, "compose.yml"), "services: {}\n");
+  mkdirSync(join(artifactRoot, "assets"));
+  writeFileSync(join(artifactRoot, "index.html"), "new release\n");
+  writeFileSync(join(artifactRoot, "assets", "app.js"), "app\n");
+  execFileSync("tar", ["-C", artifactRoot, "-czf", tarball, "."]);
+  return { deployRoot, tarball };
+}
+
 function run(command, args, options) {
   return new Promise((resolveRun) => {
     const child = spawn(command, args, options);
@@ -95,6 +112,11 @@ describe("deploy:care", () => {
       '#!/usr/bin/env bash\nprintf "%s\\n" "$*" >> "${SSH_LOG}"\ncat >/dev/null\n',
     );
     writeExecutable(join(mockBin, "scp"), "#!/usr/bin/env bash\nexit 0\n");
+    const publicCheckCount = join(mockBin, "public-check-count");
+    writeExecutable(
+      join(mockBin, "public-check"),
+      '#!/usr/bin/env bash\ncount=0\n[[ ! -f "${PUBLIC_CHECK_COUNT}" ]] || count="$(cat "${PUBLIC_CHECK_COUNT}")"\ncount=$((count + 1))\nprintf "%s" "${count}" > "${PUBLIC_CHECK_COUNT}"\n[[ "${count}" -gt 1 ]]\n',
+    );
 
     const result = spawnSync("bash", [deployScript], {
       cwd: root,
@@ -103,7 +125,8 @@ describe("deploy:care", () => {
         CHECK_CMD:
           "mkdir -p dist/assets && printf '<title>This Moment · 此刻</title><script src=\"/assets/app.js\"></script>' > dist/index.html && printf 'app' > dist/assets/app.js",
         DEPLOY_REPO_ROOT: root,
-        PUBLIC_CHECK_CMD: "false",
+        PUBLIC_CHECK_CMD: join(mockBin, "public-check"),
+        PUBLIC_CHECK_COUNT: publicCheckCount,
         SCP_BIN: join(mockBin, "scp"),
         SSH_BIN: join(mockBin, "ssh"),
         SSH_LOG: sshLog,
@@ -114,21 +137,11 @@ describe("deploy:care", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("Public verification failed; previous release restored.");
     expect(readFileSync(sshLog, "utf8")).toContain("rollback");
+    expect(readFileSync(publicCheckCount, "utf8")).toBe("2");
   });
 
   it("restores the previous release when internal health verification fails", () => {
-    const deployRoot = mkdtempSync(join(tmpdir(), "this-moment-remote-test-"));
-    const oldRelease = join(deployRoot, "releases", "old-release");
-    const artifactRoot = mkdtempSync(join(tmpdir(), "this-moment-artifact-"));
-    const tarball = join(tmpdir(), `this-moment-${Date.now()}.tar.gz`);
-    mkdirSync(oldRelease, { recursive: true });
-    writeFileSync(join(oldRelease, "index.html"), "old release\n");
-    symlinkSync("releases/old-release", join(deployRoot, "current"));
-    writeFileSync(join(deployRoot, "compose.yml"), "services: {}\n");
-    mkdirSync(join(artifactRoot, "assets"));
-    writeFileSync(join(artifactRoot, "index.html"), "new release\n");
-    writeFileSync(join(artifactRoot, "assets", "app.js"), "app\n");
-    execFileSync("tar", ["-C", artifactRoot, "-czf", tarball, "."]);
+    const { deployRoot, tarball } = createRemoteReleaseFixture();
 
     const result = spawnSync(
       "bash",
@@ -155,18 +168,7 @@ describe("deploy:care", () => {
   });
 
   it("activates a healthy release and retains the previous release", () => {
-    const deployRoot = mkdtempSync(join(tmpdir(), "this-moment-remote-test-"));
-    const oldRelease = join(deployRoot, "releases", "old-release");
-    const artifactRoot = mkdtempSync(join(tmpdir(), "this-moment-artifact-"));
-    const tarball = join(tmpdir(), `this-moment-healthy-${Date.now()}.tar.gz`);
-    mkdirSync(oldRelease, { recursive: true });
-    writeFileSync(join(oldRelease, "index.html"), "old release\n");
-    symlinkSync("releases/old-release", join(deployRoot, "current"));
-    writeFileSync(join(deployRoot, "compose.yml"), "services: {}\n");
-    mkdirSync(join(artifactRoot, "assets"));
-    writeFileSync(join(artifactRoot, "index.html"), "new release\n");
-    writeFileSync(join(artifactRoot, "assets", "app.js"), "app\n");
-    execFileSync("tar", ["-C", artifactRoot, "-czf", tarball, "."]);
+    const { deployRoot, tarball } = createRemoteReleaseFixture();
 
     const result = spawnSync(
       "bash",

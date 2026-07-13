@@ -9,10 +9,12 @@
     "test": "vitest run",
     "check": "npm run test && npm run build",
     "bootstrap:care": "bash scripts/bootstrap-care.sh",
-    "deploy:care": "bash scripts/deploy-care.sh"
+    "deploy:care": "bash scripts/deploy-care.sh",
+    "verify:care": "node scripts/verify-care.mjs && node scripts/verify-care-browser.mjs"
   },
   "devDependencies": {
     "jsdom": "^29.1.1",
+    "playwright": "^1.61.1",
     "typescript": "^5.9.3",
     "vite": "^7.1.11",
     "vitest": "^3.2.4"
